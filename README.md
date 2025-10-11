@@ -57,13 +57,48 @@ AWS 上でサーバーレスアーキテクチャを採用したフルスタッ�
 - MySQL (ローカル開発用)
 - AWS CLI (デプロイ用)
 
+### ブランチ戦略
+
+このプロジェクトは Git Flow を採用しています：
+
+- **main**: 本番環境用ブランチ（本番デプロイ）
+- **develop**: 開発環境用ブランチ（開発環境デプロイ）
+- **feature/\***: 機能開発用ブランチ（ローカル開発）
+
+### 開発ワークフロー
+
+1. **新機能開発の開始**
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/機能名
+```
+
+2. **開発完了後のマージ**
+
+```bash
+git checkout develop
+git merge feature/機能名
+git push origin develop  # 開発環境に自動デプロイ
+```
+
+3. **本番リリース**
+
+```bash
+git checkout main
+git merge develop
+git push origin main  # 本番環境に自動デプロイ
+```
+
 ### セットアップ手順
 
 1. リポジトリのクローン
 
 ```bash
-git clone <repository-url>
-cd programming-learning-app
+git clone https://github.com/morikawa-unity/curriculum.git
+cd curriculum
+git checkout develop  # 開発ブランチに切り替え
 ```
 
 2. フロントエンドのセットアップ
@@ -84,11 +119,19 @@ uvicorn src.main:app --reload
 
 ## デプロイメント
 
-AWS Amplify の統合 CI/CD パイプラインを使用して自動デプロイを行います。
+AWS Amplify の統合 CI/CD パイプラインを使用してブランチ別の自動デプロイを行います。
 
-1. GitHub リポジトリにプッシュ
-2. Amplify が自動的にビルド・デプロイを実行
-3. CloudFormation でインフラリソースを管理
+### 環境とブランチの対応
+
+- **開発環境**: `develop` ブランチ → 開発用 AWS リソース
+- **本番環境**: `main` ブランチ → 本番用 AWS リソース
+
+### デプロイフロー
+
+1. `develop` ブランチにプッシュ → 開発環境に自動デプロイ
+2. `main` ブランチにプッシュ → 本番環境に自動デプロイ
+3. Amplify が自動的にビルド・デプロイを実行
+4. CloudFormation でインフラリソースを管理
 
 ## 仕様書
 

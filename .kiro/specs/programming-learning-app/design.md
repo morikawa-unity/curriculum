@@ -79,37 +79,88 @@ graph TB
 - **CloudFormation**: Infrastructure as Code
 - **AWS Amplify**: 統合 CI/CD パイプライン
 
-### 環境構成
+### 環境構成とブランチ戦略
+
+#### Git Flow ブランチ戦略
+
+```mermaid
+gitgraph
+    commit id: "初期コミット"
+    branch develop
+    checkout develop
+    commit id: "開発基盤"
+    branch feature/auth
+    checkout feature/auth
+    commit id: "認証機能"
+    checkout develop
+    merge feature/auth
+    branch feature/exercise
+    checkout feature/exercise
+    commit id: "演習機能"
+    checkout develop
+    merge feature/exercise
+    checkout main
+    merge develop id: "v1.0リリース"
+```
+
+#### 環境とブランチの対応
 
 1. **ローカル環境**
 
+   - ブランチ: 任意（feature/\*, develop）
    - フロントエンド: localhost:3000
    - バックエンド: localhost:8000
    - データベース: ローカル MySQL
 
 2. **開発環境**
 
-   - フロントエンド: Amplify 開発環境
-   - バックエンド: Lambda + API Gateway
+   - ブランチ: develop
+   - フロントエンド: Amplify 開発環境（dev-curriculum.amplifyapp.com）
+   - バックエンド: Lambda + API Gateway（開発用）
    - データベース: RDS 開発インスタンス
 
 3. **本番環境**
+   - ブランチ: main
    - フロントエンド: Amplify 本番環境 + 独自ドメイン
-   - バックエンド: Lambda + API Gateway
+   - バックエンド: Lambda + API Gateway（本番用）
    - データベース: RDS 本番インスタンス（独立）
 
 ### デプロイメントフロー
 
 ```mermaid
-graph LR
-    A[GitHubリポジトリ] --> B[Amplify CI/CD]
-    B --> C[フロントエンドビルド]
-    B --> D[CloudFormation実行]
-    D --> E[Lambda関数デプロイ]
-    D --> F[RDS設定]
-    C --> G[Amplifyホスティング]
-    E --> H[API Gateway設定]
+graph TB
+    subgraph "開発フロー"
+        A[feature ブランチ] --> B[develop ブランチ]
+        B --> C[main ブランチ]
+    end
+
+    subgraph "開発環境デプロイ"
+        B --> D[Amplify 開発環境]
+        D --> E[開発用 Lambda]
+        D --> F[開発用 RDS]
+    end
+
+    subgraph "本番環境デプロイ"
+        C --> G[Amplify 本番環境]
+        G --> H[本番用 Lambda]
+        G --> I[本番用 RDS]
+    end
+
+    subgraph "CI/CD パイプライン"
+        J[GitHub Push] --> K[Amplify CI/CD]
+        K --> L[フロントエンドビルド]
+        K --> M[CloudFormation実行]
+        M --> N[Lambda関数デプロイ]
+        M --> O[RDS設定]
+        L --> P[ホスティング]
+    end
 ```
+
+#### ブランチ別デプロイメント戦略
+
+- **feature ブランチ**: ローカル開発のみ
+- **develop ブランチ**: 開発環境への自動デプロイ
+- **main ブランチ**: 本番環境への自動デプロイ
 
 ## コンポーネントとインターフェース
 
