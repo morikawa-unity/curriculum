@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "プログラミング学習アプリ - メインインフラストラクチャスタック"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: デプロイメント環境
+
+  AppName:
+    Type: String
+    Default: programming-learning-app
+    Description: アプリケーション名
+
+Resources:
+  # Cognito認証スタック
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./cognito.yaml
+      Parameters:
+        Environment: !Ref Environment
+        AppName: !Ref AppName
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref AppName
+        - Key: Component
+          Value: Authentication
+
+Outputs:
+  # Cognito関連の出力
+  UserPoolId:
+    Description: "Cognito ユーザープール ID"
+    Value: !GetAtt CognitoStack.Outputs.UserPoolId
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+
+  UserPoolClientId:
+    Description: "Cognito ユーザープールクライアント ID"
+    Value: !GetAtt CognitoStack.Outputs.UserPoolClientId
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"
+
+  UserPoolArn:
+    Description: "Cognito ユーザープール ARN"
+    Value: !GetAtt CognitoStack.Outputs.UserPoolArn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolArn"
+
+  UserPoolDomain:
+    Description: "Cognito ユーザープールドメイン"
+    Value: !GetAtt CognitoStack.Outputs.UserPoolDomain
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolDomain"
+
+  HostedUIUrl:
+    Description: "Cognito Hosted UI URL"
+    Value: !GetAtt CognitoStack.Outputs.HostedUIUrl
+    Export:
+      Name: !Sub "${AWS::StackName}-HostedUIUrl"

@@ -10,7 +10,7 @@ import logging
 
 # 設定とルーターのインポート
 from src.config import get_settings
-from src.handlers.auth.router import auth_router
+from src.auth.router import router as auth_router
 from src.handlers.exercise.router import exercise_router
 from src.handlers.progress.router import progress_router
 from src.utils.error_handlers import register_error_handlers
