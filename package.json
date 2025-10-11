@@ -1,0 +1,30 @@
+{
+  "name": "programming-learning-app",
+  "version": "1.0.0",
+  "description": "プログラミング学習用Webアプリケーション",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && uvicorn src.main:app --reload",
+    "build:frontend": "cd frontend && npm run build",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/programming-learning-app.git"
+  },
+  "keywords": [
+    "programming",
+    "learning",
+    "education",
+    "react",
+    "fastapi",
+    "aws"
+  ],
+  "author": "",
+  "license": "MIT"
+}
