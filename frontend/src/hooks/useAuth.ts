@@ -38,10 +38,23 @@ export const useAuth = (): UseAuthReturn => {
   const checkAuthState = async (): Promise<void> => {
     try {
       setLoading(true);
-      const currentUser = await AuthService.getCurrentUser();
-      setUser(currentUser);
+      clearError();
+
+      // 認証状態をチェック
+      const isAuthenticated = await AuthService.checkAuthState();
+
+      if (isAuthenticated) {
+        // 認証済みの場合、ユーザー情報を取得
+        const currentUser = await AuthService.getCurrentUser();
+        setUser(currentUser);
+      } else {
+        // 未認証の場合、ユーザー情報をクリア
+        setUser(null);
+      }
     } catch (error) {
-      setError("認証状態の確認に失敗しました");
+      // エラーが発生した場合は未認証として扱う
+      setUser(null);
+      console.warn("認証状態の確認中にエラーが発生しました:", error);
     } finally {
       setLoading(false);
     }
@@ -218,18 +231,13 @@ export const useAuth = (): UseAuthReturn => {
  * 認証が必要なページで使用するフック
  */
 export const useRequireAuth = () => {
-  const { isAuthenticated, isLoading, checkAuthState } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // 初回ロード時に認証状態をチェック
-    checkAuthState();
-  }, []);
 
   useEffect(() => {
     // ローディング完了後、未認証の場合はログインページにリダイレクト
     if (!isLoading && !isAuthenticated) {
-      router.push("/auth/login");
+      router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -240,13 +248,8 @@ export const useRequireAuth = () => {
  * 認証済みユーザーがアクセスできないページで使用するフック
  */
 export const useGuestOnly = () => {
-  const { isAuthenticated, isLoading, checkAuthState } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // 初回ロード時に認証状態をチェック
-    checkAuthState();
-  }, []);
 
   useEffect(() => {
     // ローディング完了後、認証済みの場合はダッシュボードにリダイレクト

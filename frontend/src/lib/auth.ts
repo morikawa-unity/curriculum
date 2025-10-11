@@ -24,6 +24,14 @@ export class AuthService {
    * ログイン
    */
   static async login(email: string, password: string): Promise<void> {
+    // 環境変数が未設定の場合はエラーを投げる
+    if (!process.env.NEXT_PUBLIC_USER_POOL_ID || !process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID) {
+      throw {
+        code: "CONFIG_ERROR",
+        message: "AWS Cognito環境変数が設定されていません。管理者にお問い合わせください。",
+      };
+    }
+
     try {
       await signIn({
         username: email,
@@ -125,6 +133,12 @@ export class AuthService {
    */
   static async getCurrentUser(): Promise<User | null> {
     try {
+      // 環境変数が未設定の場合は認証機能を無効化
+      if (!process.env.NEXT_PUBLIC_USER_POOL_ID || !process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID) {
+        console.warn("AWS Cognito環境変数が未設定のため、認証機能は無効化されています");
+        return null;
+      }
+
       const user = await getCurrentUser();
       const session = await fetchAuthSession();
 
@@ -159,6 +173,11 @@ export class AuthService {
    */
   static async checkAuthState(): Promise<boolean> {
     try {
+      // 環境変数が未設定の場合は認証機能を無効化
+      if (!process.env.NEXT_PUBLIC_USER_POOL_ID || !process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID) {
+        return false;
+      }
+
       const session = await fetchAuthSession();
       return !!session.tokens?.accessToken;
     } catch (error) {
