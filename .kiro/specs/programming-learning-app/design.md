@@ -2,7 +2,7 @@
 
 ## 概要
 
-プログラミング学習アプリは、AWS 上でサーバーレスアーキテクチャを採用したフルスタック Web アプリケーションです。フロントエンドは React + TypeScript で構築し、バックエンドは FastAPI + Lambda で実装します。ユーザー認証には Cognito、データベースには RDS（MySQL）を使用し、全体のインフラは CloudFormation で管理します。CI/CD は AWS Amplify の統合機能を活用します。
+プログラミング学習アプリは、AWS 上でサーバーレスアーキテクチャを採用したフルスタック Web アプリケーションです。フロントエンドは Next.js App Router + TypeScript でクライアントサイドレンダリング（CSR）として構築し、UI には shadcn/ui + TailwindCSS を使用してモダンで一貫性のあるデザインシステムを実装します。バックエンドは FastAPI + Lambda で実装します。ユーザー認証には Cognito、データベースには RDS（MySQL）を使用し、全体のインフラは CloudFormation で管理します。CI/CD は AWS Amplify の統合機能を活用します。
 
 ## アーキテクチャ
 
@@ -11,7 +11,7 @@
 ```mermaid
 graph TB
     subgraph "フロントエンド"
-        A[React + TypeScript]
+        A[Next.js App Router + TypeScript]
         B[TanStack Query]
         C[Zustand]
         D[Zod]
@@ -60,7 +60,10 @@ graph TB
 
 #### フロントエンド構成
 
-- **React + TypeScript**: モダンな UI 開発
+- **Next.js App Router + TypeScript**: モダンな React フレームワーク（CSR モード）
+- **shadcn/ui**: 高品質で再利用可能な UI コンポーネントライブラリ
+- **TailwindCSS**: ユーティリティファーストの CSS フレームワーク
+- **Radix UI**: アクセシブルなプリミティブコンポーネント（shadcn/ui の基盤）
 - **TanStack Query**: サーバー状態管理、キャッシュ、同期
 - **Zustand**: 軽量なクライアント状態管理
 - **Zod**: 型安全なスキーマ検証
@@ -79,37 +82,88 @@ graph TB
 - **CloudFormation**: Infrastructure as Code
 - **AWS Amplify**: 統合 CI/CD パイプライン
 
-### 環境構成
+### 環境構成とブランチ戦略
+
+#### Git Flow ブランチ戦略
+
+```mermaid
+gitgraph
+    commit id: "初期コミット"
+    branch develop
+    checkout develop
+    commit id: "開発基盤"
+    branch feature/auth
+    checkout feature/auth
+    commit id: "認証機能"
+    checkout develop
+    merge feature/auth
+    branch feature/exercise
+    checkout feature/exercise
+    commit id: "演習機能"
+    checkout develop
+    merge feature/exercise
+    checkout main
+    merge develop id: "v1.0リリース"
+```
+
+#### 環境とブランチの対応
 
 1. **ローカル環境**
 
+   - ブランチ: 任意（feature/\*, develop）
    - フロントエンド: localhost:3000
    - バックエンド: localhost:8000
    - データベース: ローカル MySQL
 
 2. **開発環境**
 
-   - フロントエンド: Amplify 開発環境
-   - バックエンド: Lambda + API Gateway
+   - ブランチ: develop
+   - フロントエンド: Amplify 開発環境（dev-curriculum.amplifyapp.com）
+   - バックエンド: Lambda + API Gateway（開発用）
    - データベース: RDS 開発インスタンス
 
 3. **本番環境**
+   - ブランチ: main
    - フロントエンド: Amplify 本番環境 + 独自ドメイン
-   - バックエンド: Lambda + API Gateway
+   - バックエンド: Lambda + API Gateway（本番用）
    - データベース: RDS 本番インスタンス（独立）
 
 ### デプロイメントフロー
 
 ```mermaid
-graph LR
-    A[GitHubリポジトリ] --> B[Amplify CI/CD]
-    B --> C[フロントエンドビルド]
-    B --> D[CloudFormation実行]
-    D --> E[Lambda関数デプロイ]
-    D --> F[RDS設定]
-    C --> G[Amplifyホスティング]
-    E --> H[API Gateway設定]
+graph TB
+    subgraph "開発フロー"
+        A[feature ブランチ] --> B[develop ブランチ]
+        B --> C[main ブランチ]
+    end
+
+    subgraph "開発環境デプロイ"
+        B --> D[Amplify 開発環境]
+        D --> E[開発用 Lambda]
+        D --> F[開発用 RDS]
+    end
+
+    subgraph "本番環境デプロイ"
+        C --> G[Amplify 本番環境]
+        G --> H[本番用 Lambda]
+        G --> I[本番用 RDS]
+    end
+
+    subgraph "CI/CD パイプライン"
+        J[GitHub Push] --> K[Amplify CI/CD]
+        K --> L[フロントエンドビルド]
+        K --> M[CloudFormation実行]
+        M --> N[Lambda関数デプロイ]
+        M --> O[RDS設定]
+        L --> P[ホスティング]
+    end
 ```
+
+#### ブランチ別デプロイメント戦略
+
+- **feature ブランチ**: ローカル開発のみ
+- **develop ブランチ**: 開発環境への自動デプロイ
+- **main ブランチ**: 本番環境への自動デプロイ
 
 ## コンポーネントとインターフェース
 
@@ -117,16 +171,34 @@ graph LR
 
 ```
 src/
-├── components/           # 再利用可能なUIコンポーネント
+├── app/                 # Next.js App Router
+│   ├── layout.tsx       # ルートレイアウト
+│   ├── page.tsx         # ホームページ
+│   ├── dashboard/       # ダッシュボードページ
+│   │   └── page.tsx
+│   ├── exercises/       # 演習ページ
+│   │   ├── page.tsx     # 演習一覧
+│   │   └── [id]/        # 個別演習
+│   │       └── page.tsx
+│   ├── progress/        # 進捗ページ
+│   │   └── page.tsx
+│   ├── profile/         # プロフィールページ
+│   │   └── page.tsx
+│   └── auth/            # 認証ページ
+│       ├── login/
+│       │   └── page.tsx
+│       └── register/
+│           └── page.tsx
+├── components/          # 再利用可能なUIコンポーネント
+│   ├── ui/              # shadcn/ui コンポーネント
+│   │   ├── button.tsx   # ボタンコンポーネント
+│   │   ├── card.tsx     # カードコンポーネント
+│   │   ├── input.tsx    # 入力フィールド
+│   │   ├── navigation-menu.tsx # ナビゲーション
+│   │   └── ...          # その他のUIコンポーネント
 │   ├── auth/            # 認証関連コンポーネント
 │   ├── exercise/        # 演習関連コンポーネント
-│   ├── progress/        # 進捗関連コンポーネント
-│   └── common/          # 共通コンポーネント
-├── pages/               # ページコンポーネント
-│   ├── Dashboard.tsx    # ダッシュボード
-│   ├── Exercise.tsx     # 演習ページ
-│   ├── Profile.tsx      # プロフィールページ
-│   └── Auth.tsx         # 認証ページ
+│   └── progress/        # 進捗関連コンポーネント
 ├── hooks/               # カスタムフック
 │   ├── useAuth.ts       # 認証フック
 │   ├── useExercise.ts   # 演習フック
@@ -134,17 +206,14 @@ src/
 ├── store/               # Zustand状態管理
 │   ├── authStore.ts     # 認証状態
 │   └── uiStore.ts       # UI状態
-├── api/                 # API呼び出し
-│   ├── auth.ts          # 認証API
-│   ├── exercise.ts      # 演習API
-│   └── progress.ts      # 進捗API
-├── schemas/             # Zodスキーマ
-│   ├── auth.ts          # 認証スキーマ
-│   ├── exercise.ts      # 演習スキーマ
-│   └── progress.ts      # 進捗スキーマ
-└── utils/               # ユーティリティ
-    ├── constants.ts     # 定数
-    └── helpers.ts       # ヘルパー関数
+├── lib/                 # ライブラリ設定
+│   ├── api.ts           # API呼び出し
+│   ├── queryClient.ts   # TanStack Query設定
+│   └── utils.ts         # ユーティリティ
+└── schemas/             # Zodスキーマ
+    ├── auth.ts          # 認証スキーマ
+    ├── exercise.ts      # 演習スキーマ
+    └── progress.ts      # 進捗スキーマ
 ```
 
 ### バックエンド API 構成
@@ -290,6 +359,53 @@ CREATE TABLE progress (
 1. **CloudFormation テンプレート検証**
 2. **デプロイメントテスト**
 3. **セキュリティ設定の検証**
+
+## デザインシステム
+
+### shadcn/ui コンポーネント戦略
+
+#### 使用するコンポーネント
+
+1. **基本コンポーネント**
+
+   - Button: アクション用ボタン
+   - Input: フォーム入力フィールド
+   - Label: フォームラベル
+   - Card: コンテンツカード
+   - Badge: ステータス表示
+
+2. **ナビゲーション**
+
+   - Navigation Menu: メインナビゲーション
+   - Breadcrumb: パンくずリスト
+   - Tabs: タブナビゲーション
+
+3. **フォーム**
+
+   - Form: フォーム管理
+   - Select: ドロップダウン選択
+   - Textarea: 複数行テキスト入力
+   - Checkbox: チェックボックス
+
+4. **フィードバック**
+
+   - Alert: 通知メッセージ
+   - Toast: 一時的な通知
+   - Progress: 進捗表示
+   - Skeleton: ローディング状態
+
+5. **レイアウト**
+   - Sheet: サイドパネル
+   - Dialog: モーダルダイアログ
+   - Popover: ポップオーバー
+   - Separator: 区切り線
+
+#### テーマ設定
+
+- **カラーパレット**: Blue を基調とした学習アプリに適したカラースキーム
+- **タイポグラフィ**: 読みやすさを重視したフォント設定
+- **ダークモード**: システム設定に応じた自動切り替え
+- **レスポンシブ**: モバイルファーストのブレークポイント設定
 
 ## セキュリティ考慮事項
 
