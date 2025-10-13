@@ -156,11 +156,39 @@ export class AuthService {
       }
 
       const payload = idToken.payload;
+      const cognitoUserId = user.userId; // Cognitoのsub
 
+      // バックエンドAPIからユーザー情報を取得
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/v1/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${idToken.toString()}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const dbUser = await response.json();
+          // DBから取得した情報を使用
+          return {
+            userId: cognitoUserId,
+            email: dbUser.email || payload.email as string,
+            preferredUsername: dbUser.username || payload.preferred_username as string || payload.name as string,
+            emailVerified: payload.email_verified as boolean,
+            createdAt: dbUser.created_at || new Date(payload.iat! * 1000).toISOString(),
+            updatedAt: dbUser.updated_at || new Date().toISOString(),
+          };
+        }
+      } catch (apiError) {
+        console.warn('DBからユーザー情報を取得できませんでした。Cognitoの情報を使用します:', apiError);
+      }
+
+      // API呼び出しが失敗した場合はCognitoの情報のみ使用
       return {
-        userId: user.userId,
+        userId: cognitoUserId,
         email: payload.email as string,
-        preferredUsername: payload.preferred_username as string,
+        preferredUsername: payload.preferred_username as string || payload.name as string,
         emailVerified: payload.email_verified as boolean,
         createdAt: new Date(payload.iat! * 1000).toISOString(),
         updatedAt: new Date().toISOString(),
@@ -245,20 +273,16 @@ export class AuthService {
       NotAuthorizedException: "メールアドレスまたはパスワードが正しくありません",
       UserNotConfirmedException: "メールアドレスの確認が完了していません",
       UserNotFoundException: "ユーザーが見つかりません",
-      InvalidParameterException: "入力パラメータが無効です",
-      InvalidPasswordException: "パスワードが無効です",
 
       // 新規登録関連
       UsernameExistsException: "このメールアドレスは既に使用されています",
-      InvalidParameterException: "入力パラメータが無効です",
-      CodeMismatchException: "確認コードが正しくありません",
-      ExpiredCodeException: "確認コードの有効期限が切れています",
       LimitExceededException: "試行回数の上限に達しました。しばらく時間をおいてから再試行してください",
 
-      // パスワードリセット関連
+      // 共通エラー
+      InvalidParameterException: "入力パラメータが無効です",
+      InvalidPasswordException: "パスワードが要件を満たしていません",
       CodeMismatchException: "確認コードが正しくありません",
       ExpiredCodeException: "確認コードの有効期限が切れています",
-      InvalidPasswordException: "パスワードが要件を満たしていません",
 
       // ネットワーク関連
       NetworkError: "ネットワークエラーが発生しました。接続を確認してください",
