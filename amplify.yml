@@ -3,7 +3,6 @@ backend:
   phases:
     preBuild:
       commands:
-        - cd backend
         - pip install --upgrade pip
         - pip install awscli aws-sam-cli
     build:
