@@ -1,0 +1,18 @@
+{
+  "develop": {
+    "NEXT_PUBLIC_AWS_REGION": "ap-northeast-1",
+    "NEXT_PUBLIC_USER_POOL_ID": "ap-northeast-1_5SdJ4Iu5J",
+    "NEXT_PUBLIC_USER_POOL_CLIENT_ID": "558bv8s595shb9bbk5i3nf78ee",
+    "NEXT_PUBLIC_ENVIRONMENT": "dev",
+    "NEXT_PUBLIC_API_URL": "https://api-dev.your-domain.com",
+    "_LIVE_UPDATES": "[{\"name\":\"Amplify CLI\",\"pkg\":\"@aws-amplify/cli\",\"type\":\"npm\",\"version\":\"latest\"}]"
+  },
+  "main": {
+    "NEXT_PUBLIC_AWS_REGION": "ap-northeast-1",
+    "NEXT_PUBLIC_USER_POOL_ID": "ap-northeast-1_5SdJ4Iu5J",
+    "NEXT_PUBLIC_USER_POOL_CLIENT_ID": "558bv8s595shb9bbk5i3nf78ee",
+    "NEXT_PUBLIC_ENVIRONMENT": "prod",
+    "NEXT_PUBLIC_API_URL": "https://api.your-domain.com",
+    "_LIVE_UPDATES": "[{\"name\":\"Amplify CLI\",\"pkg\":\"@aws-amplify/cli\",\"type\":\"npm\",\"version\":\"latest\"}]"
+  }
+}

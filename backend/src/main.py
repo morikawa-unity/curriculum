@@ -10,9 +10,10 @@ import logging
 
 # 設定とルーターのインポート
 from src.config import get_settings
-from src.handlers.auth.router import auth_router
+from src.auth.router import router as auth_router
 from src.handlers.exercise.router import exercise_router
 from src.handlers.progress.router import progress_router
+from src.handlers.user.router import router as user_router
 from src.utils.error_handlers import register_error_handlers
 from src.models.common import HealthCheckResponse
 from src.database.connection import get_db_connection
@@ -36,7 +37,7 @@ app = FastAPI(
 # CORS 設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
@@ -47,6 +48,7 @@ register_error_handlers(app)
 
 # API ルーターの登録
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(user_router, prefix="/api/v1")
 app.include_router(exercise_router, prefix="/api/v1")
 app.include_router(progress_router, prefix="/api/v1")
 

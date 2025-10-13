@@ -213,7 +213,7 @@ git branch -d hotfix/緊急修正内容
 
 ### セットアップ手順
 
-1. リポジトリのクローン
+#### 1. リポジトリのクローン
 
 ```bash
 git clone https://github.com/morikawa-unity/curriculum.git
@@ -221,21 +221,140 @@ cd curriculum
 git checkout develop  # 開発ブランチに切り替え
 ```
 
-2. フロントエンドのセットアップ
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-3. バックエンドのセットアップ
+#### 2. バックエンドのセットアップ
 
 ```bash
 cd backend
+
+# 仮想環境の作成
+python3 -m venv venv
+
+# 仮想環境の有効化
+source venv/bin/activate  # macOS/Linux
+# または
+venv\Scripts\activate     # Windows
+
+# 依存関係のインストール
 pip install -r requirements.txt
-uvicorn src.main:app --reload
 ```
+
+**環境変数の設定**
+
+`backend/.env` ファイルを作成：
+
+```env
+# データベース設定（AWS RDS）
+DATABASE_HOST=programming-learning-app-db-v2.c7wewuq6yxt2.ap-northeast-1.rds.amazonaws.com
+DATABASE_PORT=3306
+DATABASE_NAME=programming_learning_app
+DATABASE_USER=admin
+DATABASE_PASSWORD=ProgrammingApp2024!
+
+# AWS設定
+AWS_REGION=ap-northeast-1
+COGNITO_USER_POOL_ID=ap-northeast-1_5SdJ4Iu5J
+COGNITO_CLIENT_ID=558bv8s595shb9bbk5i3nf78ee
+USER_POOL_ID=ap-northeast-1_5SdJ4Iu5J
+USER_POOL_CLIENT_ID=558bv8s595shb9bbk5i3nf78ee
+
+# セキュリティ設定
+SECRET_KEY=your-secret-key-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# CORS設定
+ALLOWED_ORIGINS=http://localhost:3000,https://localhost:3000
+```
+
+**データベースのセットアップ（初回のみ）**
+
+```bash
+# RDSデータベースの初期化
+python setup_rds_database.py
+
+# サンプルデータの投入
+python insert_sample_data_rds.py
+```
+
+#### 3. フロントエンドのセットアップ
+
+```bash
+cd frontend
+
+# 依存関係のインストール
+npm install
+```
+
+**環境変数の設定**
+
+`frontend/.env.local` ファイルを作成：
+
+```env
+# AWS Cognito 設定
+NEXT_PUBLIC_AWS_REGION=ap-northeast-1
+NEXT_PUBLIC_USER_POOL_ID=ap-northeast-1_5SdJ4Iu5J
+NEXT_PUBLIC_USER_POOL_CLIENT_ID=558bv8s595shb9bbk5i3nf78ee
+NEXT_PUBLIC_ENVIRONMENT=dev
+
+# バックエンドAPI URL
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+## ローカル起動方法
+
+アプリケーションを起動するには、**バックエンドとフロントエンドの両方を起動する必要があります**。
+
+### 1. バックエンドの起動
+
+ターミナル1で：
+
+```bash
+cd backend
+source venv/bin/activate  # 仮想環境を有効化
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+起動確認：
+```bash
+curl http://localhost:8000/health
+# => {"status":"healthy",...} が返ってくればOK
+```
+
+### 2. フロントエンドの起動
+
+ターミナル2で（別のターミナルウィンドウを開く）：
+
+```bash
+cd frontend
+npm run dev
+```
+
+起動すると、ブラウザで http://localhost:3000 にアクセスできます。
+
+### 3. ログイン
+
+- **メールアドレス**: `testuser@example.com`
+- **パスワード**: `TestUser2024!`
+
+## トラブルシューティング
+
+### バックエンドが起動しない
+
+- `.env` ファイルが正しく設定されているか確認
+- RDSインスタンスが起動しているか確認：
+  ```bash
+  aws rds describe-db-instances --db-instance-identifier programming-learning-app-db-v2 --region ap-northeast-1
+  ```
+
+### フロントエンドで「AWS Cognito環境変数が設定されていません」と表示される
+
+- `frontend/.env.local` ファイルが作成されているか確認
+- ファイルを作成/編集した後は、`npm run dev` を再起動
+
+### データベース接続エラー
+
+- セキュリティグループでポート3306が開放されているか確認
+- `backend/README.md` のトラブルシューティングセクションを参照
 
 ## デプロイメント
 

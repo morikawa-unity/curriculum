@@ -1,0 +1,188 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "プログラミング学習アプリ - Cognito ユーザープール設定"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: デプロイメント環境
+
+  AppName:
+    Type: String
+    Default: programming-learning-app
+    Description: アプリケーション名
+
+Resources:
+  # Cognito ユーザープール
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AppName}-${Environment}-user-pool"
+      # ユーザー名設定
+      UsernameAttributes:
+        - email
+      AliasAttributes:
+        - email
+        - preferred_username
+
+      # パスワードポリシー
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
+
+      # アカウント復旧設定
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+      # 自動検証設定
+      AutoVerifiedAttributes:
+        - email
+
+      # ユーザー登録設定
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+        InviteMessageAction: SUPPRESS
+
+      # MFA設定（オプション）
+      MfaConfiguration: "OFF"
+
+      # ユーザープール削除保護
+      DeletionProtection: ACTIVE
+
+      # スキーマ設定
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+        - Name: preferred_username
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+
+      # メール設定
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+
+      # デバイス設定
+      DeviceConfiguration:
+        ChallengeRequiredOnNewDevice: false
+        DeviceOnlyRememberedOnUserPrompt: false
+
+  # Cognito ユーザープールクライアント
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${AppName}-${Environment}-client"
+      UserPoolId: !Ref UserPool
+
+      # 認証フロー設定
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+
+      # トークン設定
+      GenerateSecret: false # SPAアプリケーションのためfalse
+      RefreshTokenValidity: 30 # 30日
+      AccessTokenValidity: 60 # 60分
+      IdTokenValidity: 60 # 60分
+      TokenValidityUnits:
+        RefreshToken: days
+        AccessToken: minutes
+        IdToken: minutes
+
+      # OAuth設定
+      SupportedIdentityProviders:
+        - COGNITO
+
+      # コールバックURL（開発・本番環境対応）
+      CallbackURLs:
+        - !If
+          - IsProdEnvironment
+          - "https://programming-learning.example.com/auth/callback"
+          - "https://dev-programming-learning.amplifyapp.com/auth/callback"
+        - "http://localhost:3000/auth/callback"
+
+      # ログアウトURL
+      LogoutURLs:
+        - !If
+          - IsProdEnvironment
+          - "https://programming-learning.example.com/auth/logout"
+          - "https://dev-programming-learning.amplifyapp.com/auth/logout"
+        - "http://localhost:3000/auth/logout"
+
+      # OAuth スコープ
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+
+      # OAuth フロー
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthFlowsUserPoolClient: true
+
+      # セキュリティ設定
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+
+      # 読み取り・書き込み属性
+      ReadAttributes:
+        - email
+        - email_verified
+        - preferred_username
+      WriteAttributes:
+        - email
+        - preferred_username
+
+  # Cognito ユーザープールドメイン
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "${AppName}-${Environment}-auth"
+      UserPoolId: !Ref UserPool
+
+Conditions:
+  IsProdEnvironment: !Equals [!Ref Environment, "prod"]
+
+Outputs:
+  UserPoolId:
+    Description: "Cognito ユーザープール ID"
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+
+  UserPoolClientId:
+    Description: "Cognito ユーザープールクライアント ID"
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"
+
+  UserPoolArn:
+    Description: "Cognito ユーザープール ARN"
+    Value: !GetAtt UserPool.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolArn"
+
+  UserPoolDomain:
+    Description: "Cognito ユーザープールドメイン"
+    Value: !Sub "https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com"
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolDomain"
+
+  HostedUIUrl:
+    Description: "Cognito Hosted UI URL"
+    Value: !Sub "https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/login"
+    Export:
+      Name: !Sub "${AWS::StackName}-HostedUIUrl"

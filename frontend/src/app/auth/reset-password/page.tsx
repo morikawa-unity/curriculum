@@ -7,31 +7,33 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, useGuestOnly } from "@/hooks/useAuth";
-import { loginSchema, LoginFormData } from "@/schemas/auth";
+import { resetPasswordSchema, ResetPasswordFormData } from "@/schemas/auth";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-function LoginForm() {
-  const { login, isLoading, error, clearError } = useAuth();
+function ResetPasswordForm() {
+  const { resetPassword, isLoading, error, clearError } = useAuth();
   const { isLoading: authLoading } = useGuestOnly();
   const searchParams = useSearchParams();
 
-  // URL パラメータからメッセージを取得
-  const confirmed = searchParams?.get("confirmed");
-  const reset = searchParams?.get("reset");
+  // URL パラメータからメールアドレスを取得
+  const emailFromUrl = searchParams?.get("email") || "";
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: emailFromUrl,
+    },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: ResetPasswordFormData) => {
     clearError();
     try {
-      await login(data);
+      await resetPassword(data);
     } catch (error) {
       // エラーは useAuth フック内で処理される
     }
@@ -54,22 +56,9 @@ function LoginForm() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">ログイン</h1>
-            <p className="text-gray-600">プログラミング学習アプリ</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">新しいパスワード設定</h1>
+            <p className="text-gray-600">メールに送信された確認コードと新しいパスワードを入力してください</p>
           </div>
-
-          {/* 成功メッセージ */}
-          {confirmed && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-              メールアドレスの確認が完了しました。ログインしてください。
-            </div>
-          )}
-
-          {reset && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-              パスワードがリセットされました。新しいパスワードでログインしてください。
-            </div>
-          )}
 
           {/* エラーメッセージ */}
           {error && <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">{error}</div>}
@@ -87,24 +76,60 @@ function LoginForm() {
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="your@example.com"
+                readOnly={!!emailFromUrl}
               />
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                パスワード
+              <label htmlFor="confirmationCode" className="block text-sm font-medium text-gray-700 mb-2">
+                確認コード
+              </label>
+              <input
+                type="text"
+                id="confirmationCode"
+                {...register("confirmationCode")}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-widest ${
+                  errors.confirmationCode ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="123456"
+                maxLength={6}
+              />
+              {errors.confirmationCode && <p className="mt-1 text-sm text-red-600">{errors.confirmationCode.message}</p>}
+              <p className="mt-1 text-xs text-gray-500">メールに記載された6桁の数字を入力してください</p>
+            </div>
+
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                新しいパスワード
               </label>
               <input
                 type="password"
-                id="password"
-                {...register("password")}
+                id="newPassword"
+                {...register("newPassword")}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.password ? "border-red-500" : "border-gray-300"
+                  errors.newPassword ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="パスワードを入力"
+                placeholder="新しいパスワードを入力"
               />
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+              {errors.newPassword && <p className="mt-1 text-sm text-red-600">{errors.newPassword.message}</p>}
+              <p className="mt-1 text-xs text-gray-500">8文字以上、大文字・小文字・数字を含む</p>
+            </div>
+
+            <div>
+              <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                新しいパスワード確認
+              </label>
+              <input
+                type="password"
+                id="confirmNewPassword"
+                {...register("confirmNewPassword")}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.confirmNewPassword ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="新しいパスワードを再入力"
+              />
+              {errors.confirmNewPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmNewPassword.message}</p>}
             </div>
 
             <button
@@ -115,24 +140,18 @@ function LoginForm() {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  ログイン中...
+                  更新中...
                 </div>
               ) : (
-                "ログイン"
+                "パスワードを更新"
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center space-y-2">
+          <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              アカウントをお持ちでない方は{" "}
-              <Link href="/register" className="text-blue-600 hover:underline">
-                新規登録
-              </Link>
-            </p>
-            <p className="text-sm text-gray-600">
-              <Link href="/auth/forgot-password" className="text-blue-600 hover:underline">
-                パスワードを忘れた方はこちら
+              <Link href="/login" className="text-blue-600 hover:underline">
+                ログインページに戻る
               </Link>
             </p>
           </div>
@@ -142,7 +161,7 @@ function LoginForm() {
   );
 }
 
-export default function Login() {
+export default function ResetPassword() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center p-8 bg-gray-50">
@@ -152,7 +171,7 @@ export default function Login() {
         </div>
       </div>
     }>
-      <LoginForm />
+      <ResetPasswordForm />
     </Suspense>
   );
 }
