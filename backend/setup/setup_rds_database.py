@@ -40,10 +40,12 @@ CREATE TABLE IF NOT EXISTS {DATABASE_NAME}.users (
     id VARCHAR(36) PRIMARY KEY COMMENT 'Cognito User ID',
     email VARCHAR(255) UNIQUE NOT NULL COMMENT 'メールアドレス',
     username VARCHAR(50) UNIQUE NOT NULL COMMENT 'ユーザー名',
+    role TINYINT NOT NULL DEFAULT 2 COMMENT 'ユーザーロール: 1=管理者, 2=一般ユーザー',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '作成日時',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
     INDEX idx_email (email),
-    INDEX idx_username (username)
+    INDEX idx_username (username),
+    INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ユーザー情報テーブル';
 """
 

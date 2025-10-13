@@ -306,7 +306,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ### 1. バックエンドの起動
 
-ターミナル1で：
+ターミナル 1 で：
 
 ```bash
 cd backend
@@ -315,6 +315,7 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 起動確認：
+
 ```bash
 curl http://localhost:8000/health
 # => {"status":"healthy",...} が返ってくればOK
@@ -322,7 +323,7 @@ curl http://localhost:8000/health
 
 ### 2. フロントエンドの起動
 
-ターミナル2で（別のターミナルウィンドウを開く）：
+ターミナル 2 で（別のターミナルウィンドウを開く）：
 
 ```bash
 cd frontend
@@ -333,27 +334,37 @@ npm run dev
 
 ### 3. ログイン
 
+#### 一般ユーザー
+
 - **メールアドレス**: `testuser@example.com`
 - **パスワード**: `TestUser2024!`
+
+#### 管理者ユーザー
+
+- **メールアドレス**: `admin@programming-learning.com`
+- **パスワード**: `AdminPass123!`
+- **権限**: 管理者機能へのアクセス可能
+
+> **注意**: 本番環境では管理者パスワードを必ず変更してください。
 
 ## トラブルシューティング
 
 ### バックエンドが起動しない
 
 - `.env` ファイルが正しく設定されているか確認
-- RDSインスタンスが起動しているか確認：
+- RDS インスタンスが起動しているか確認：
   ```bash
   aws rds describe-db-instances --db-instance-identifier programming-learning-app-db-v2 --region ap-northeast-1
   ```
 
-### フロントエンドで「AWS Cognito環境変数が設定されていません」と表示される
+### フロントエンドで「AWS Cognito 環境変数が設定されていません」と表示される
 
 - `frontend/.env.local` ファイルが作成されているか確認
 - ファイルを作成/編集した後は、`npm run dev` を再起動
 
 ### データベース接続エラー
 
-- セキュリティグループでポート3306が開放されているか確認
+- セキュリティグループでポート 3306 が開放されているか確認
 - `backend/README.md` のトラブルシューティングセクションを参照
 
 ## デプロイメント
