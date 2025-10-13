@@ -32,6 +32,7 @@ class UserResponse(UserBase):
     ユーザー情報レスポンス用モデル
     """
     id: str = Field(..., description="ユーザーID")
+    role: int = Field(..., description="ユーザーロール")
     created_at: datetime = Field(..., description="作成日時")
     updated_at: datetime = Field(..., description="更新日時")
     

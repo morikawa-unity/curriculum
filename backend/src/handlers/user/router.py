@@ -61,6 +61,7 @@ async def get_current_user_info(
             id=user_data["id"],
             email=user_data["email"],
             username=user_data["username"],
+            role=user_data["role"],
             created_at=user_data["created_at"],
             updated_at=user_data["updated_at"]
         )
