@@ -1,21 +1,24 @@
 "use client";
 
+// 動的レンダリングを強制
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, useGuestOnly } from "@/hooks/useAuth";
 import { confirmEmailSchema, ConfirmEmailFormData } from "@/schemas/auth";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-export default function ConfirmEmail() {
+function ConfirmEmailForm() {
   const { confirmEmail, resendConfirmationCode, isLoading, error, clearError } = useAuth();
   const { isLoading: authLoading } = useGuestOnly();
   const searchParams = useSearchParams();
   const [resendMessage, setResendMessage] = useState("");
 
   // URL パラメータからメールアドレスを取得
-  const emailFromUrl = searchParams.get("email") || "";
+  const emailFromUrl = searchParams?.get("email") || "";
 
   const {
     register,
@@ -152,5 +155,20 @@ export default function ConfirmEmail() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmEmail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-8 bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <ConfirmEmailForm />
+    </Suspense>
   );
 }

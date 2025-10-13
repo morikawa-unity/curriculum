@@ -1,13 +1,17 @@
 "use client";
 
+// 動的レンダリングを強制
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, useGuestOnly } from "@/hooks/useAuth";
 import { resetPasswordSchema, ResetPasswordFormData } from "@/schemas/auth";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function ResetPassword() {
+function ResetPasswordForm() {
   const { resetPassword, isLoading, error, clearError } = useAuth();
   const { isLoading: authLoading } = useGuestOnly();
   const searchParams = useSearchParams();
@@ -154,5 +158,20 @@ export default function ResetPassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-8 bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
