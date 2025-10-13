@@ -1,37 +1,17 @@
 version: 1
-applications:
-  - frontend:
-      phases:
-        preBuild:
-          commands:
-            - cd frontend
-            - npm ci
-        build:
-          commands:
-            - cd frontend
-            - npm run build
-      artifacts:
-        baseDirectory: frontend/.next
-        files:
-          - "**/*"
-      cache:
-        paths:
-          - frontend/node_modules/**/*
-          - frontend/.next/cache/**/*
-    appRoot: frontend
-  - backend:
-      phases:
-        preBuild:
-          commands:
-            - cd backend
-            - python3 -m pip install --upgrade pip
-            - pip install -r requirements.txt
-        build:
-          commands:
-            - cd backend
-            - echo "Backend build completed"
-      artifacts:
-        baseDirectory: backend
-        files:
-          - "**/*"
-    appRoot: backend
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
