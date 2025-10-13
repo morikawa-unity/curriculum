@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from pydantic import BaseModel
+from src.config import get_settings
 
 
 class CognitoUser(BaseModel):
@@ -29,14 +30,15 @@ class CognitoAuthService:
     """AWS Cognito認証サービス"""
     
     def __init__(self):
-        self.region = os.getenv('AWS_REGION', 'ap-northeast-1')
-        self.user_pool_id = os.getenv('USER_POOL_ID')
-        self.user_pool_client_id = os.getenv('USER_POOL_CLIENT_ID')
-        
+        settings = get_settings()
+        self.region = settings.aws_region
+        self.user_pool_id = settings.cognito_user_pool_id
+        self.user_pool_client_id = settings.cognito_client_id
+
         if not self.user_pool_id:
-            raise ValueError("USER_POOL_ID environment variable is required")
+            raise ValueError("COGNITO_USER_POOL_ID is required in configuration")
         if not self.user_pool_client_id:
-            raise ValueError("USER_POOL_CLIENT_ID environment variable is required")
+            raise ValueError("COGNITO_CLIENT_ID is required in configuration")
         
         # JWKSエンドポイントURL
         self.jwks_url = f"https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool_id}/.well-known/jwks.json"
