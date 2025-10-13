@@ -36,6 +36,9 @@ export class AuthService {
       await signIn({
         username: email,
         password,
+        options: {
+          authFlowType: 'USER_PASSWORD_AUTH'
+        }
       });
     } catch (error) {
       throw this.handleAuthError(error);
