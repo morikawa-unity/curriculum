@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: プログラミング学習アプリ バックエンドAPI
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        DATABASE_HOST: programming-learning-app-db-v2.c7wewuq6yxt2.ap-northeast-1.rds.amazonaws.com
+        DATABASE_PORT: 3306
+        DATABASE_NAME: programming_learning_app
+        DATABASE_USER: admin
+        AWS_REGION_NAME: ap-northeast-1
+        COGNITO_USER_POOL_ID: ap-northeast-1_5SdJ4Iu5J
+        COGNITO_CLIENT_ID: 2a15han2ua40skc95joop2lnnj
+        USER_POOL_ID: ap-northeast-1_5SdJ4Iu5J
+        USER_POOL_CLIENT_ID: 2a15han2ua40skc95joop2lnnj
+        SECRET_KEY: programming-learning-app-secret-key-2024
+        ALGORITHM: HS256
+        ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        ALLOWED_ORIGINS: https://develop.d1ctw4uq3hjb47.amplifyapp.com
+
+Resources:
+  ProgrammingLearningAPI:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src.lambda_handler.handler
+      Description: プログラミング学習アプリのバックエンドAPI
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            ApiId: !Ref HttpApi
+        RootEvent:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+            ApiId: !Ref HttpApi
+      Environment:
+        Variables:
+          DATABASE_PASSWORD: ProgrammingApp2024!
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - https://develop.d1ctw4uq3hjb47.amplifyapp.com
+          - http://localhost:3000
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowCredentials: true
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway エンドポイント URL"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt ProgrammingLearningAPI.Arn
