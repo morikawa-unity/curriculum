@@ -12,11 +12,11 @@ frontend:
   phases:
     preBuild:
       commands:
-        - cd $CODEBUILD_SRC_DIR
-        - npm ci
+        - pwd
+        - ls -la
+        - npm install
     build:
       commands:
-        - cd $CODEBUILD_SRC_DIR
         - npm run build --prefix frontend
   artifacts:
     baseDirectory: frontend/out
