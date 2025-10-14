@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: 'export', // APIを使用するため静的エクスポートは無効化
+  output: 'export', // CSRアプリのため静的エクスポート
   trailingSlash: true,
   images: {
     unoptimized: true,
