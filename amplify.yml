@@ -1,24 +1,18 @@
 version: 1
 backend:
   phases:
-    preBuild:
+    build:
       commands:
         - pip install --upgrade pip
         - pip install awscli aws-sam-cli
-    build:
-      commands:
         - cd backend && sam build && sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name programming-learning-app-api --resolve-s3 --region ap-northeast-1 --capabilities CAPABILITY_IAM
 frontend:
   phases:
     preBuild:
       commands:
-        - cd ..
-        - pwd
-        - ls -la
         - npm install
     build:
       commands:
-        - cd ..
         - npm run build --prefix frontend
   artifacts:
     baseDirectory: frontend/out
