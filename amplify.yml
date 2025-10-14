@@ -12,11 +12,13 @@ frontend:
   phases:
     preBuild:
       commands:
+        - cd ..
         - pwd
         - ls -la
         - npm install
     build:
       commands:
+        - cd ..
         - npm run build --prefix frontend
   artifacts:
     baseDirectory: frontend/out
