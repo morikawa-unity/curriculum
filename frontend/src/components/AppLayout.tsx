@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -10,6 +11,16 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  // サイドバーを表示しないページのパス
+  const hideLayoutPaths = ["/login", "/register", "/auth"];
+  const shouldHideLayout = hideLayoutPaths.some((path) => pathname?.startsWith(path));
+
+  // 認証ページではサイドバーなしのシンプルなレイアウト
+  if (shouldHideLayout) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
