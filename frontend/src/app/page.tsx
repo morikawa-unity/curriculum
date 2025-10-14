@@ -12,8 +12,8 @@ export default function Home() {
     // 認証状態に応じてリダイレクト
     if (!isLoading) {
       if (isAuthenticated) {
-        // 認証済みの場合はダッシュボードにリダイレクト
-        router.push("/dashboard");
+        // 認証済みの場合はホームにリダイレクト
+        router.push("/home");
       } else {
         // 未認証の場合はログインページにリダイレクト
         router.push("/login");

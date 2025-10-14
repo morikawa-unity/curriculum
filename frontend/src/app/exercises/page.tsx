@@ -1,35 +1,31 @@
 "use client";
 
-import Link from "next/link";
-
-export default function Exercises() {
-  const exercises = [
-    { id: "1", title: "Hello World", difficulty: "初級" },
-    { id: "2", title: "変数と演算", difficulty: "初級" },
-    { id: "3", title: "条件分岐", difficulty: "中級" },
-  ];
+export default function ExercisesPage() {
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+      <div className="max-w-2xl w-full text-center">
+        {/* アイコン */}
         <div className="mb-8">
-          <Link href="/" className="text-blue-600 hover:underline">
-            ← ホームに戻る
-          </Link>
+          <div className="inline-block p-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-2xl">
+            <span className="text-7xl">🚀</span>
+          </div>
         </div>
 
-        <h1 className="text-3xl font-bold mb-8">演習一覧</h1>
+        {/* タイトル */}
+        <h1 className="text-5xl font-bold text-gray-900 mb-4">Coming Soon</h1>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {exercises.map((exercise) => (
-            <div key={exercise.id} className="border rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-2">{exercise.title}</h3>
-              <p className="text-gray-600 mb-4">{exercise.difficulty}</p>
-              <Link href={`/exercises/${exercise.id}`} className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                開始する
-              </Link>
-            </div>
-          ))}
+        {/* 説明 */}
+        <p className="text-xl text-gray-600 mb-8">
+          演習機能は現在開発中です
+        </p>
+
+        {/* 詳細メッセージ */}
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <p className="text-gray-700 leading-relaxed">
+            プログラミング演習機能を準備中です。<br />
+            近日中に公開予定ですので、もうしばらくお待ちください。
+          </p>
         </div>
       </div>
     </div>

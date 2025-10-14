@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
+import Header from "./Header";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface AppLayoutProps {
@@ -48,19 +49,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Mobile header */}
-        <div className="lg:hidden">
-          <div className="flex items-center justify-between bg-gray-50 border-b border-gray-200 px-4 py-1.5">
-            <button
-              type="button"
-              className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-            </button>
-            <h1 className="text-lg font-medium text-gray-900">学習アプリ</h1>
-            <div className="w-12" />
-          </div>
+        {/* Header */}
+        <Header />
+
+        {/* Mobile menu button - only on mobile */}
+        <div className="lg:hidden fixed top-4 left-4 z-50">
+          <button
+            type="button"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-md bg-white shadow-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+          </button>
         </div>
 
         {/* Page content */}

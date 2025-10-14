@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenIcon, HomeIcon, AcademicCapIcon, ChartBarIcon, UserIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, HomeIcon, AcademicCapIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: "ホーム", href: "/", icon: HomeIcon },
+  { name: "ホーム", href: "/home", icon: HomeIcon },
   { name: "教材", href: "/materials", icon: BookOpenIcon },
   { name: "演習", href: "/exercises", icon: AcademicCapIcon },
   { name: "ダッシュボード", href: "/dashboard", icon: ChartBarIcon },
-  { name: "プロフィール", href: "/profile", icon: UserIcon },
 ];
 
 export default function Sidebar() {

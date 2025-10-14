@@ -2,9 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { UserIcon, AcademicCapIcon, ClockIcon, TrophyIcon } from "@heroicons/react/24/outline";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PR0101001, PR0101001Response } from "@/services/PR0101Service";
 
 export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfilePageContent />
+    </ProtectedRoute>
+  );
+}
+
+function ProfilePageContent() {
   const [profile, setProfile] = useState<PR0101001Response | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,14 +94,50 @@ export default function ProfilePage() {
 
       {/* ユーザー情報 */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex items-center mb-4">
-          <div className="bg-gray-200 rounded-full p-3 mr-4">
-            <UserIcon className="h-12 w-12 text-gray-600" />
+        <div className="flex items-start gap-6">
+          <div className="flex-shrink-0">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-3xl text-white font-bold">
+                {profile.username.charAt(0).toUpperCase()}
+              </span>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">{profile.username}</h2>
-            <p className="text-gray-600">{profile.email}</p>
-            <p className="text-sm text-gray-500">参加日: {formatDate(profile.created_at)}</p>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{profile.username}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">メールアドレス</p>
+                <p className="text-gray-900">{profile.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">ユーザーID</p>
+                <p className="text-gray-900 font-mono text-sm break-all">{profile.id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">ロール</p>
+                <p className="text-gray-900">
+                  {profile.role === 1 ? (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                      👑 管理者
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      👤 一般ユーザー
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">登録日</p>
+                <p className="text-gray-900">
+                  {new Date(profile.created_at).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
