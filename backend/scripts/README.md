@@ -19,6 +19,11 @@
 - **test_auth.py** - 認証機能のテスト
 - **test_rds_connection.py** - RDS 接続テスト
 - **test_rds_passwords.py** - RDS パスワード関連テスト
+- **test_profile_api.py** - プロフィール API 機能のテスト
+
+### マイグレーション・チェック関連
+
+- **check_and_migrate_achievements.py** - user_achievements テーブルの存在確認とマイグレーション実行
 
 ## 使用方法
 
