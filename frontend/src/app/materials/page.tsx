@@ -20,7 +20,7 @@ const courses: Course[] = [
     icon: "🐘",
     level: "初級〜中級",
     lessons: 8,
-    color: "from-purple-500 to-indigo-600",
+    color: "from-blue-500 to-cyan-600",
   },
 ];
 
@@ -29,11 +29,10 @@ export default function MaterialsPage() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            📚 学習教材
+        <div className="mb-8 ml-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            学習教材
           </h1>
-          <p className="text-gray-600">コースを選択して学習を始めましょう</p>
         </div>
 
         {/* コース選択画面 */}
@@ -42,46 +41,54 @@ export default function MaterialsPage() {
             <Link
               key={course.id}
               href={`/materials/${course.id}`}
-              className="bg-white rounded-lg shadow-md p-6 transition-all hover:shadow-lg border border-gray-200 hover:border-gray-300 block"
+              className="bg-white rounded-xl shadow-lg p-6 transition-all hover:shadow-2xl border-2 border-blue-100 hover:border-blue-400 block group relative overflow-hidden h-[420px] flex flex-col"
             >
-              {/* コースアイコン */}
-              <div className={`inline-block p-4 bg-gradient-to-br ${course.color} rounded-2xl shadow-lg mb-4`}>
-                <span className="text-4xl">{course.icon}</span>
-              </div>
+              {/* ホバー時の背景 */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-              {/* コース情報 */}
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h2>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">{course.description}</p>
-
-              {/* メタ情報 */}
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  <span>{course.level}</span>
+              <div className="relative z-10">
+                {/* コースアイコン */}
+                <div className={`inline-block p-5 bg-gradient-to-br ${course.color} rounded-2xl shadow-xl mb-4 group-hover:scale-110 transition-transform`}>
+                  <span className="text-5xl">{course.icon}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  <span>{course.lessons}レッスン</span>
-                </div>
-              </div>
 
-              {/* 開始ボタンテキスト */}
-              <div className="mt-6 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center">
-                コースを開始
+                {/* コース情報 */}
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">{course.title}</h2>
+                <p className="text-gray-600 mb-5 text-sm leading-relaxed">{course.description}</p>
+
+                {/* メタ情報 */}
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-5">
+                  <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                    <span className="font-medium">{course.level}</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-cyan-50 px-3 py-1.5 rounded-lg">
+                    <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <span className="font-medium">{course.lessons}レッスン</span>
+                  </div>
+                </div>
+
+                {/* 開始ボタン */}
+                <div className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-xl text-center group-hover:from-blue-600 group-hover:to-cyan-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                  <span>コースを開始</span>
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
             </Link>
           ))}
