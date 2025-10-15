@@ -41,36 +41,36 @@ function LoginForm() {
   // 認証状態チェック中はローディング表示
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-amber-600 via-yellow-600 to-orange-500">
+      <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-500">
         <div className="text-center bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-12">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-amber-200 border-t-amber-600 mx-auto"></div>
-          <p className="mt-6 text-amber-900 font-semibold text-lg">読み込み中...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+          <p className="mt-6 text-blue-900 font-semibold text-lg">読み込み中...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-amber-600 via-yellow-600 to-orange-500">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-500">
       {/* 背景装飾 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-amber-400 rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-blue-400 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-cyan-400 rounded-full opacity-10 blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-amber-200">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-blue-200">
           {/* ロゴ・ヘッダー */}
           <div className="text-center mb-8">
-            <div className="inline-block p-4 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl shadow-lg mb-4">
+            <div className="inline-block p-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg mb-4">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-yellow-700 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-cyan-700 bg-clip-text text-transparent mb-2">
               ログイン
             </h1>
-            <p className="text-amber-800 font-medium">プログラミング学習アプリ</p>
+            <p className="text-blue-800 font-medium">プログラミング学習アプリ</p>
           </div>
 
           {/* 成功メッセージ */}
@@ -110,12 +110,12 @@ function LoginForm() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-amber-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-blue-900 mb-2">
                 メールアドレス
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                   </svg>
                 </div>
@@ -123,8 +123,8 @@ function LoginForm() {
                   type="email"
                   id="email"
                   {...register("email")}
-                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${
-                    errors.email ? "border-red-400 bg-red-50" : "border-amber-200 bg-white hover:border-amber-300"
+                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.email ? "border-red-400 bg-red-50" : "border-blue-200 bg-white hover:border-blue-300"
                   }`}
                   placeholder="your@example.com"
                 />
@@ -140,12 +140,12 @@ function LoginForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-amber-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-blue-900 mb-2">
                 パスワード
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
@@ -153,15 +153,15 @@ function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   {...register("password")}
-                  className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all ${
-                    errors.password ? "border-red-400 bg-red-50" : "border-amber-200 bg-white hover:border-amber-300"
+                  className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.password ? "border-red-400 bg-red-50" : "border-blue-200 bg-white hover:border-blue-300"
                   }`}
                   placeholder="パスワードを入力"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-amber-600 hover:text-amber-700 focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-blue-600 hover:text-blue-700 focus:outline-none"
                 >
                   {showPassword ? (
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +188,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-bold py-3 px-4 rounded-xl hover:from-amber-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -207,15 +207,15 @@ function LoginForm() {
           </form>
 
           {/* 一時的に非表示
-          <div className="mt-8 pt-6 border-t border-amber-200 text-center space-y-3">
-            <p className="text-sm text-amber-900">
+          <div className="mt-8 pt-6 border-t border-blue-200 text-center space-y-3">
+            <p className="text-sm text-blue-900">
               アカウントをお持ちでない方は{" "}
-              <Link href="/register" className="font-semibold text-amber-700 hover:text-amber-800 underline decoration-2 decoration-amber-400 underline-offset-2 transition-colors">
+              <Link href="/register" className="font-semibold text-blue-700 hover:text-blue-800 underline decoration-2 decoration-blue-400 underline-offset-2 transition-colors">
                 新規登録
               </Link>
             </p>
-            <p className="text-sm text-amber-900">
-              <Link href="/auth/forgot-password" className="font-semibold text-amber-700 hover:text-amber-800 underline decoration-2 decoration-amber-400 underline-offset-2 transition-colors">
+            <p className="text-sm text-blue-900">
+              <Link href="/auth/forgot-password" className="font-semibold text-blue-700 hover:text-blue-800 underline decoration-2 decoration-blue-400 underline-offset-2 transition-colors">
                 パスワードを忘れた方はこちら
               </Link>
             </p>
@@ -237,10 +237,10 @@ function LoginForm() {
 export default function Login() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-amber-600 via-yellow-600 to-orange-500">
+      <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-500">
         <div className="text-center bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-12">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-amber-200 border-t-amber-600 mx-auto"></div>
-          <p className="mt-6 text-amber-900 font-semibold text-lg">読み込み中...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+          <p className="mt-6 text-blue-900 font-semibold text-lg">読み込み中...</p>
         </div>
       </div>
     }>
