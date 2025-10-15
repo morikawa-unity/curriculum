@@ -4,7 +4,7 @@ import { useAuthActions } from "@/store/authStore";
 import { AuthService } from "@/lib/auth";
 
 // 自動ログアウトまでの時間（ミリ秒）
-const AUTO_LOGOUT_TIME = 30 * 60 * 1000; // 30分
+const AUTO_LOGOUT_TIME = 75 * 60 * 1000; // 75分
 
 /**
  * 自動ログアウトフック
