@@ -6,6 +6,8 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Bars3Icon, XMarkIcon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
+import { useAuth as useAuthState } from "@/store/authStore";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -15,6 +17,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(true); // 初期表示は閉じた状態
   const pathname = usePathname();
+  const { isAuthenticated } = useAuthState();
+
+  // 自動ログアウト機能
+  useAutoLogout(isAuthenticated);
 
   // サイドバーを表示しないページのパス
   const hideLayoutPaths = ["/login", "/register", "/auth"];
