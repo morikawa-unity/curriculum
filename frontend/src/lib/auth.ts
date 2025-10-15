@@ -18,8 +18,18 @@ export interface AuthServiceError {
   message: string;
 }
 
+// 認証キャッシュの型定義
+interface AuthCache {
+  isAuthenticated: boolean;
+  timestamp: number;
+  user: User | null;
+}
+
 // 認証サービスクラス
 export class AuthService {
+  // 認証状態のキャッシュ（5秒間有効）
+  private static authCache: AuthCache | null = null;
+  private static readonly CACHE_DURATION = 5000; // 5秒
   /**
    * ログイン
    */
@@ -37,9 +47,12 @@ export class AuthService {
         username: email,
         password,
         options: {
-          authFlowType: 'USER_PASSWORD_AUTH'
-        }
+          authFlowType: "USER_PASSWORD_AUTH",
+        },
       });
+
+      // ログイン成功時にキャッシュをクリアして最新情報を取得
+      this.clearAuthCache();
     } catch (error) {
       throw this.handleAuthError(error);
     }
@@ -126,15 +139,21 @@ export class AuthService {
   static async logout(): Promise<void> {
     try {
       await signOut();
+      // ログアウト時にキャッシュをクリア
+      this.clearAuthCache();
     } catch (error) {
       throw this.handleAuthError(error);
     }
   }
 
   /**
-   * 現在のユーザー情報を取得
+   * 現在のユーザー情報を取得（キャッシュ付き）
    */
   static async getCurrentUser(): Promise<User | null> {
+    // キャッシュが有効でユーザー情報がある場合はキャッシュを返す
+    if (this.authCache && Date.now() - this.authCache.timestamp < this.CACHE_DURATION && this.authCache.user) {
+      return this.authCache.user;
+    }
     try {
       // 環境変数が未設定の場合は認証機能を無効化
       if (!process.env.NEXT_PUBLIC_USER_POOL_ID || !process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID) {
@@ -142,10 +161,10 @@ export class AuthService {
         return null;
       }
 
-      const user = await getCurrentUser();
+      const authUser = await getCurrentUser();
       const session = await fetchAuthSession();
 
-      if (!user || !session.tokens) {
+      if (!authUser || !session.tokens) {
         return null;
       }
 
@@ -156,62 +175,85 @@ export class AuthService {
       }
 
       const payload = idToken.payload;
-      const cognitoUserId = user.userId; // Cognitoのsub
+      const cognitoUserId = authUser.userId; // Cognitoのsub
 
       // バックエンドAPIからユーザー情報を取得
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const response = await fetch(`${apiUrl}/api/v1/users/me`, {
           headers: {
-            'Authorization': `Bearer ${idToken.toString()}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken.toString()}`,
+            "Content-Type": "application/json",
           },
         });
 
         if (response.ok) {
           const dbUser = await response.json();
           // DBから取得した情報を使用
-          return {
+          const userInfo: User = {
             userId: cognitoUserId,
-            email: dbUser.email || payload.email as string,
-            preferredUsername: dbUser.username || payload.preferred_username as string || payload.name as string,
+            email: dbUser.email || (payload.email as string),
+            preferredUsername: dbUser.username || (payload.preferred_username as string) || (payload.name as string),
             emailVerified: payload.email_verified as boolean,
             createdAt: dbUser.created_at || new Date(payload.iat! * 1000).toISOString(),
             updatedAt: dbUser.updated_at || new Date().toISOString(),
           };
+
+          // キャッシュを更新
+          this.updateAuthCache(true, userInfo);
+
+          return userInfo;
         }
       } catch (apiError) {
-        console.warn('DBからユーザー情報を取得できませんでした。Cognitoの情報を使用します:', apiError);
+        console.warn("DBからユーザー情報を取得できませんでした。Cognitoの情報を使用します:", apiError);
       }
 
       // API呼び出しが失敗した場合はCognitoの情報のみ使用
-      return {
+      const fallbackUser: User = {
         userId: cognitoUserId,
         email: payload.email as string,
-        preferredUsername: payload.preferred_username as string || payload.name as string,
+        preferredUsername: (payload.preferred_username as string) || (payload.name as string),
         emailVerified: payload.email_verified as boolean,
         createdAt: new Date(payload.iat! * 1000).toISOString(),
         updatedAt: new Date().toISOString(),
       };
-    } catch (error) {
+
+      // キャッシュを更新
+      this.updateAuthCache(true, fallbackUser);
+
+      return fallbackUser;
+    } catch {
       // ユーザーが認証されていない場合はnullを返す
+      this.updateAuthCache(false, null);
       return null;
     }
   }
 
   /**
-   * 認証状態をチェック
+   * 認証状態をチェック（キャッシュ付き）
    */
   static async checkAuthState(): Promise<boolean> {
     try {
+      // キャッシュが有効な場合はキャッシュを返す
+      if (this.authCache && Date.now() - this.authCache.timestamp < this.CACHE_DURATION) {
+        return this.authCache.isAuthenticated;
+      }
+
       // 環境変数が未設定の場合は認証機能を無効化
       if (!process.env.NEXT_PUBLIC_USER_POOL_ID || !process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID) {
+        this.updateAuthCache(false, null);
         return false;
       }
 
       const session = await fetchAuthSession();
-      return !!session.tokens?.accessToken;
-    } catch (error) {
+      const isAuthenticated = !!session.tokens?.accessToken;
+
+      // キャッシュを更新
+      this.updateAuthCache(isAuthenticated, null);
+
+      return isAuthenticated;
+    } catch {
+      this.updateAuthCache(false, null);
       return false;
     }
   }
@@ -223,7 +265,7 @@ export class AuthService {
     try {
       const session = await fetchAuthSession();
       return session.tokens?.accessToken?.toString() || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -235,7 +277,7 @@ export class AuthService {
     try {
       const session = await fetchAuthSession();
       return session.tokens?.idToken?.toString() || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -262,6 +304,24 @@ export class AuthService {
       code: "UNKNOWN_ERROR",
       message: "予期しないエラーが発生しました",
     };
+  }
+
+  /**
+   * 認証キャッシュを更新
+   */
+  private static updateAuthCache(isAuthenticated: boolean, user: User | null): void {
+    this.authCache = {
+      isAuthenticated,
+      user,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * 認証キャッシュをクリア
+   */
+  private static clearAuthCache(): void {
+    this.authCache = null;
   }
 
   /**
