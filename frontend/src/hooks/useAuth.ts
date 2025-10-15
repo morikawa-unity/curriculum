@@ -74,8 +74,8 @@ export const useAuth = (): UseAuthReturn => {
       const user = await AuthService.getCurrentUser();
       setUser(user);
 
-      // ダッシュボードにリダイレクト
-      router.push("/dashboard");
+      // ホームにリダイレクト
+      router.push("/home");
     } catch (error) {
       const authError = error as AuthServiceError;
       setError(authError.message);
@@ -252,9 +252,9 @@ export const useGuestOnly = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // ローディング完了後、認証済みの場合はダッシュボードにリダイレクト
+    // ローディング完了後、認証済みの場合はホームにリダイレクト
     if (!isLoading && isAuthenticated) {
-      router.push("/dashboard");
+      router.push("/home");
     }
   }, [isAuthenticated, isLoading, router]);
 
