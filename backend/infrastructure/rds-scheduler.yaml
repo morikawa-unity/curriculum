@@ -1,0 +1,242 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "RDS自動停止・開始スケジューラー"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: デプロイメント環境
+
+  AppName:
+    Type: String
+    Default: programming-learning-app
+    Description: アプリケーション名
+
+  RDSInstanceIdentifier:
+    Type: String
+    Default: programming-learning-app-db-v2
+    Description: 制御対象のRDSインスタンス識別子
+
+Resources:
+  # Lambda実行ロール
+  RDSSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-rds-scheduler-role-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: RDSControlPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:StopDBInstance
+                  - rds:StartDBInstance
+                  - rds:DescribeDBInstances
+                Resource: !Sub "arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${RDSInstanceIdentifier}"
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref AppName
+
+  # RDS制御Lambda関数
+  RDSSchedulerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AppName}-rds-scheduler-${Environment}"
+      Runtime: python3.10
+      Handler: index.lambda_handler
+      Role: !GetAtt RDSSchedulerRole.Arn
+      Timeout: 60
+      Environment:
+        Variables:
+          RDS_INSTANCE_ID: !Ref RDSInstanceIdentifier
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          import os
+          import logging
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          def lambda_handler(event, context):
+              rds = boto3.client('rds')
+              
+              action = event.get('action')
+              db_instance_id = os.environ['RDS_INSTANCE_ID']
+              
+              logger.info(f"RDS Scheduler triggered with action: {action} for instance: {db_instance_id}")
+              
+              try:
+                  # 現在のRDSインスタンスの状態を確認
+                  response = rds.describe_db_instances(DBInstanceIdentifier=db_instance_id)
+                  db_instance = response['DBInstances'][0]
+                  current_status = db_instance['DBInstanceStatus']
+                  
+                  logger.info(f"Current RDS status: {current_status}")
+                  
+                  if action == 'stop':
+                      if current_status == 'available':
+                          rds.stop_db_instance(DBInstanceIdentifier=db_instance_id)
+                          logger.info(f"Successfully initiated stop for RDS instance: {db_instance_id}")
+                          message = f"RDS停止を開始しました: {db_instance_id}"
+                      else:
+                          logger.info(f"RDS instance is not in available state: {current_status}")
+                          message = f"RDS停止をスキップしました（現在の状態: {current_status}）"
+                          
+                  elif action == 'start':
+                      if current_status == 'stopped':
+                          rds.start_db_instance(DBInstanceIdentifier=db_instance_id)
+                          logger.info(f"Successfully initiated start for RDS instance: {db_instance_id}")
+                          message = f"RDS開始を開始しました: {db_instance_id}"
+                      else:
+                          logger.info(f"RDS instance is not in stopped state: {current_status}")
+                          message = f"RDS開始をスキップしました（現在の状態: {current_status}）"
+                  else:
+                      raise ValueError(f"Invalid action: {action}")
+                      
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps({
+                          'message': message,
+                          'instance_id': db_instance_id,
+                          'action': action,
+                          'previous_status': current_status
+                      }, ensure_ascii=False)
+                  }
+                  
+              except Exception as e:
+                  error_message = f"Error {action}ping RDS instance {db_instance_id}: {str(e)}"
+                  logger.error(error_message)
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps({
+                          'error': error_message,
+                          'instance_id': db_instance_id,
+                          'action': action
+                      }, ensure_ascii=False)
+                  }
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref AppName
+
+  # EventBridge実行ロール
+  EventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AppName}-eventbridge-role-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt RDSSchedulerFunction.Arn
+
+  # Lambda関数の実行許可（EventBridge用）
+  RDSSchedulerFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RDSSchedulerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${AppName}-*"
+
+  # 毎日深夜1時に停止（JST = UTC+9なので16:00 UTC）
+  RDSStopSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${AppName}-rds-stop-schedule-${Environment}"
+      Description: "RDSを毎日深夜1時（JST）に停止"
+      ScheduleExpression: "cron(0 16 * * ? *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt RDSSchedulerFunction.Arn
+          Id: "RDSStopTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          Input: '{"action": "stop"}'
+
+  # 月曜・火曜の19時に開始（JST = UTC+9なので10:00 UTC）
+  RDSStartMondayTuesdaySchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${AppName}-rds-start-mon-tue-schedule-${Environment}"
+      Description: "RDSを月曜・火曜の19時（JST）に開始"
+      ScheduleExpression: "cron(0 10 ? * MON,TUE *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt RDSSchedulerFunction.Arn
+          Id: "RDSStartMondayTuesdayTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          Input: '{"action": "start"}'
+
+  # 水曜〜日曜の10時に開始（JST = UTC+9なので01:00 UTC）
+  RDSStartWednesdaySundaySchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${AppName}-rds-start-wed-sun-schedule-${Environment}"
+      Description: "RDSを水曜〜日曜の10時（JST）に開始"
+      ScheduleExpression: "cron(0 1 ? * WED,THU,FRI,SAT,SUN *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt RDSSchedulerFunction.Arn
+          Id: "RDSStartWednesdaySundayTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          Input: '{"action": "start"}'
+
+Outputs:
+  RDSSchedulerFunctionArn:
+    Description: "RDSスケジューラーLambda関数のARN"
+    Value: !GetAtt RDSSchedulerFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RDSSchedulerFunctionArn"
+
+  RDSSchedulerFunctionName:
+    Description: "RDSスケジューラーLambda関数名"
+    Value: !Ref RDSSchedulerFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-RDSSchedulerFunctionName"
+
+  StopScheduleArn:
+    Description: "RDS停止スケジュールのARN"
+    Value: !GetAtt RDSStopSchedule.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-StopScheduleArn"
+
+  StartMondayTuesdayScheduleArn:
+    Description: "RDS開始スケジュール（月火）のARN"
+    Value: !GetAtt RDSStartMondayTuesdaySchedule.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-StartMondayTuesdayScheduleArn"
+
+  StartWednesdaySundayScheduleArn:
+    Description: "RDS開始スケジュール（水日）のARN"
+    Value: !GetAtt RDSStartWednesdaySundaySchedule.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-StartWednesdaySundayScheduleArn"
