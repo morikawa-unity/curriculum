@@ -45,7 +45,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* 左側：タイトル（デスクトップのみ表示） */}
           <div className="hidden lg:block">
-            <h1 className="text-xl font-semibold text-gray-900">プログラミング学習アプリ</h1>
+            <h1 className="text-xl font-semibold text-gray-900">学習アプリ</h1>
           </div>
 
           {/* 中央：空白（モバイルでは非表示） */}
