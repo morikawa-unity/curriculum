@@ -1,15 +1,4 @@
-import {
-  signIn,
-  signUp,
-  signOut,
-  confirmSignUp,
-  resendSignUpCode,
-  resetPassword,
-  confirmResetPassword,
-  getCurrentUser,
-  fetchAuthSession,
-  AuthError,
-} from "aws-amplify/auth";
+import { signIn, signOut, getCurrentUser, fetchAuthSession, AuthError } from "aws-amplify/auth";
 import { User } from "@/schemas/auth";
 
 // 認証エラーの型定義
@@ -58,80 +47,7 @@ export class AuthService {
     }
   }
 
-  /**
-   * 新規登録
-   */
-  static async register(email: string, password: string, preferredUsername: string): Promise<void> {
-    try {
-      await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-            preferred_username: preferredUsername,
-          },
-        },
-      });
-    } catch (error) {
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * メール確認
-   */
-  static async confirmEmail(email: string, confirmationCode: string): Promise<void> {
-    try {
-      await confirmSignUp({
-        username: email,
-        confirmationCode,
-      });
-    } catch (error) {
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * 確認コード再送信
-   */
-  static async resendConfirmationCode(email: string): Promise<void> {
-    try {
-      await resendSignUpCode({
-        username: email,
-      });
-    } catch (error) {
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * パスワードリセット要求
-   */
-  static async forgotPassword(email: string): Promise<void> {
-    try {
-      await resetPassword({
-        username: email,
-      });
-    } catch (error) {
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * パスワードリセット確認
-   */
-  static async confirmResetPassword(email: string, confirmationCode: string, newPassword: string): Promise<void> {
-    try {
-      await confirmResetPassword({
-        username: email,
-        confirmationCode,
-        newPassword,
-      });
-    } catch (error) {
-      throw this.handleAuthError(error);
-    }
-  }
+  // 新規登録、メール確認、パスワードリセット機能は一旦無効化
 
   /**
    * ログアウト

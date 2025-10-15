@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore, useAuth as useAuthState, useAuthActions } from "@/store/authStore";
+import { useAuth as useAuthState, useAuthActions } from "@/store/authStore";
 import { AuthService, AuthServiceError } from "@/lib/auth";
-import { LoginFormData, RegisterFormData, ConfirmEmailFormData, ForgotPasswordFormData, ResetPasswordFormData } from "@/schemas/auth";
+import { LoginFormData } from "@/schemas/auth";
 
 // 認証フックの戻り値の型定義
 interface UseAuthReturn {
@@ -14,11 +14,6 @@ interface UseAuthReturn {
 
   // アクション
   login: (data: LoginFormData) => Promise<void>;
-  register: (data: RegisterFormData) => Promise<void>;
-  confirmEmail: (data: ConfirmEmailFormData) => Promise<void>;
-  resendConfirmationCode: (email: string) => Promise<void>;
-  forgotPassword: (data: ForgotPasswordFormData) => Promise<void>;
-  resetPassword: (data: ResetPasswordFormData) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
   checkAuthState: () => Promise<void>;
@@ -85,107 +80,7 @@ export const useAuth = (): UseAuthReturn => {
     }
   };
 
-  /**
-   * 新規登録
-   */
-  const register = async (data: RegisterFormData): Promise<void> => {
-    try {
-      setLoading(true);
-      clearError();
-
-      await AuthService.register(data.email, data.password, data.preferredUsername);
-
-      // 登録成功後、確認ページにリダイレクト
-      router.push(`/auth/confirm-email?email=${encodeURIComponent(data.email)}`);
-    } catch (error) {
-      const authError = error as AuthServiceError;
-      setError(authError.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * メール確認
-   */
-  const confirmEmail = async (data: ConfirmEmailFormData): Promise<void> => {
-    try {
-      setLoading(true);
-      clearError();
-
-      await AuthService.confirmEmail(data.email, data.confirmationCode);
-
-      // 確認成功後、ログインページにリダイレクト
-      router.push("/auth/login?confirmed=true");
-    } catch (error) {
-      const authError = error as AuthServiceError;
-      setError(authError.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * 確認コード再送信
-   */
-  const resendConfirmationCode = async (email: string): Promise<void> => {
-    try {
-      setLoading(true);
-      clearError();
-
-      await AuthService.resendConfirmationCode(email);
-    } catch (error) {
-      const authError = error as AuthServiceError;
-      setError(authError.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * パスワードリセット要求
-   */
-  const forgotPassword = async (data: ForgotPasswordFormData): Promise<void> => {
-    try {
-      setLoading(true);
-      clearError();
-
-      await AuthService.forgotPassword(data.email);
-
-      // リセットコード入力ページにリダイレクト
-      router.push(`/auth/reset-password?email=${encodeURIComponent(data.email)}`);
-    } catch (error) {
-      const authError = error as AuthServiceError;
-      setError(authError.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * パスワードリセット確認
-   */
-  const resetPassword = async (data: ResetPasswordFormData): Promise<void> => {
-    try {
-      setLoading(true);
-      clearError();
-
-      await AuthService.confirmResetPassword(data.email, data.confirmationCode, data.newPassword);
-
-      // リセット成功後、ログインページにリダイレクト
-      router.push("/auth/login?reset=true");
-    } catch (error) {
-      const authError = error as AuthServiceError;
-      setError(authError.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 新規登録、メール確認、パスワードリセット機能は一旦無効化
 
   /**
    * ログアウト
@@ -198,7 +93,7 @@ export const useAuth = (): UseAuthReturn => {
       logoutStore();
 
       // ログインページにリダイレクト
-      router.push("/auth/login");
+      router.push("/login");
     } catch (error) {
       const authError = error as AuthServiceError;
       setError(authError.message);
@@ -216,11 +111,6 @@ export const useAuth = (): UseAuthReturn => {
 
     // アクション
     login,
-    register,
-    confirmEmail,
-    resendConfirmationCode,
-    forgotPassword,
-    resetPassword,
     logout,
     clearError,
     checkAuthState,
