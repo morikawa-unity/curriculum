@@ -41,7 +41,7 @@ export default function MaterialsPage() {
           {courses.map((course) => (
             <Link
               key={course.id}
-              href={`/${course.id}`}
+              href={`/materials/${course.id}`}
               className="bg-white rounded-lg shadow-md p-6 transition-all hover:shadow-lg border border-gray-200 hover:border-gray-300 block"
             >
               {/* コースアイコン */}
