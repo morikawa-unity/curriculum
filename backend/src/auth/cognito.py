@@ -115,12 +115,14 @@ class CognitoAuthService:
             public_key = self._get_public_key(unverified_header)
             
             # トークンを検証・デコード
+            # leeway: サーバーとクライアントの時刻のずれを許容（秒）
             payload = jwt.decode(
                 token,
                 public_key,
                 algorithms=['RS256'],
                 audience=self.user_pool_client_id,
-                issuer=f"https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool_id}"
+                issuer=f"https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool_id}",
+                leeway=60  # 60秒の時刻ずれを許容
             )
             
             # 必須フィールドの確認

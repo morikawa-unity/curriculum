@@ -4,6 +4,8 @@ import { useAuthActions } from "@/store/authStore";
 import { AuthService } from "@/lib/auth";
 
 // 自動ログアウトまでの時間（ミリ秒）
+// テスト用: 10秒でログアウトする場合は下記をコメントアウト解除
+// const AUTO_LOGOUT_TIME = 10 * 1000; // 10秒
 const AUTO_LOGOUT_TIME = 75 * 60 * 1000; // 75分
 
 /**
@@ -48,34 +50,20 @@ export const useAutoLogout = (isAuthenticated: boolean) => {
     // 初期タイマー設定
     resetTimer();
 
-    // ユーザーアクティビティを監視するイベント
-    const events = [
-      "mousedown",
-      "mousemove",
-      "keypress",
-      "scroll",
-      "touchstart",
-      "click",
-    ];
-
-    // イベントハンドラー
-    const handleActivity = () => {
+    // マウス移動を監視してユーザーアクティビティを検知
+    const handleMouseMove = () => {
       resetTimer();
     };
 
     // イベントリスナーを追加
-    events.forEach((event) => {
-      document.addEventListener(event, handleActivity);
-    });
+    document.addEventListener("mousemove", handleMouseMove);
 
     // クリーンアップ
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      events.forEach((event) => {
-        document.removeEventListener(event, handleActivity);
-      });
+      document.removeEventListener("mousemove", handleMouseMove);
     };
   }, [isAuthenticated, resetTimer]);
 };
